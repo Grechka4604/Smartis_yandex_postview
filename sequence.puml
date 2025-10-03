@@ -2,6 +2,7 @@
 actor "Браузер (Сайт клиента)" as BrowserClient
 actor "Браузер (Страницы Яндекса)" as BrowserYandex
 participant "SmartisTrackerModule\n(https://tracker.smartcallback.ru)" as Smartis
+participant "SmartisPostviewModule" as SmartisPV
 participant "YandexMapModule\n(https://an.yandex.ru)" as YandexMap
 participant "YandexVerifyModule\n(https://verify.yandex.ru)" as YandexVerify
 database "YandexPostview_table\n(postview.yandex_views)" as DB
@@ -44,7 +45,10 @@ group 3. Просмотр рекламного объявления
     YandexVerify -> YandexVerify : Идентификация PARTNER_NAME = Smartis
     YandexVerify -> Smartis : GET /show?param1=1&param2=2...&Yandexuid=XXXX&ExtUID=pid\nHeaders:\n- User-Agent\n- X-Yabs-Request-Id\n- X-Forwarded-For (IP без последнего октета)
     activate Smartis
-    Smartis -> DB : INSERT INTO postview.yandex_views\n(с параметрами из запроса и headers)
+    Smartis ->  SmartisPV: POST /postviews/show/yandex-direct
+    activate SmartisPV
+    SmartisPV --> Smartis: 200 OK
+    deactivate SmartisPV
     Smartis --> YandexVerify : 200 OK
     deactivate Smartis
     YandexVerify --> BrowserYandex : 200 OK (пиксель завершён)
