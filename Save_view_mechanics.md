@@ -1,31 +1,5 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
-# Нужно описать POST endpoint /postviews/show/yandex-direct
-
-Что будем отправлять
-{ad_id}
-{campaign_id}
-{keyword}
-{device_type}
-{source}
-{source_type}
-{region_name}
-{yclid}
-utm_source
-Источник перехода или платформа продвижения, обязательный параметр
-utm_source=yandex— объявления размещаются в Директе
-utm_medium
-Тип продвижения, обязательный параметр
-cpc, search— контекстная реклама; display— медийная реклама
-utm_campaign
-Название кампании, обязательный параметр;
-utm_campaign=polet_v_kosmos или utm_campaign={campaign_id}
-utm_content
-Дополнительная информация, которая помогает различать объявления, необязательный параметр;
-Можно использовать несколько значений, разделяя их "|" или ".": utm_content={position_type}.{position}
-utm_term
-
-POST endpoint `/postviews/show/yandex-direct` предназначен для сбора и передачи данных о просмотре рекламного объявления Яндекс Директ. В запросе должны передаваться параметры, отражающие источник, кампанию, объявление и условия показа по стандарту UTM и уникальные параметры Яндекса.
+# endpoint для сохранения
+POST endpoint `/postviews/show/yandex-direct` предназначен для сохранения данных о просмотре рекламного объявления Яндекс Директ. 
 
 ### Структура POST-запроса
 
@@ -33,6 +7,8 @@ POST endpoint `/postviews/show/yandex-direct` предназначен для с
 
 ```json
 {
+  "yandexUUID":"UUID в система Яндекса",
+  "pid":"наш peaople_id",
   "ad_id": "id объявления в Директе",
   "campaign_id": "id кампании в Директе",
   "keyword": "ключевая фраза показа",
@@ -52,27 +28,27 @@ POST endpoint `/postviews/show/yandex-direct` предназначен для с
 
 ### Обязательные параметры
 
-- `utm_source` — указывает платформу, например, "yandex" (для объявлений в Яндекс.Директ).
-- `utm_medium` — тип продвижения: "cpc", "search" (контекст), "display" (медийка).
-- `utm_campaign` — название/идентификатор кампании.
-- Остальные поля наполняются по ситуации — для более глубокой аналитики и валидации событий перехода на сайт из Яндекс.Директа.
+- yandexUUID
+- pid
 
 
 ### Описание полей
 
 | Поле | Назначение | Обязательность |
 | :-- | :-- | :-- |
+| yandexUUID | UUID в система Яндекса | Да |
+| pid | наш peaople_id | Да |
 | ad_id | ID объявления | Нет |
 | campaign_id | ID кампании | Нет |
 | keyword | Ключевая фраза показа | Нет |
 | device_type | Тип устройства (desktop/mobile/tablet) | Нет |
-| source | utm_source, источник (например, "yandex") | Да |
-| source_type | utm_medium, тип трафика (cpc, search, display) | Да |
+| source | utm_source, источник (например, "yandex") | Нет |
+| source_type | utm_medium, тип трафика (cpc, search, display) | Нет |
 | region_name | Регион показа | Нет |
 | yclid | Идентификатор клика Яндекса | Нет |
-| utm_source | Дублирует source, обязателен; рекомендовано передавать оба | Да |
-| utm_medium | Тип продвижения (например, "cpc", "search") | Да |
-| utm_campaign | Название/Id кампании | Да |
+| utm_source | Дублирует source, обязателен; рекомендовано передавать оба | Нет |
+| utm_medium | Тип продвижения (например, "cpc", "search") | Нет |
+| utm_campaign | Название/Id кампании | Нет |
 | utm_content | Доп. инфо для различия объявлений | Нет |
 | utm_term | Ключевое слово | Нет |
 
@@ -96,28 +72,30 @@ POST endpoint `/postviews/show/yandex-direct` предназначен для с
 }
 ```
 
-Все значения можно склеивать с помощью серверной логики (например, получать часть меток из источника или принимать все как отдельные поля).[^1][^2][^6]
-<span style="display:none">[^10][^3][^4][^5][^7][^8][^9]</span>
 
-<div align="center">⁂</div>
+# таблица для сохранения
 
-[^1]: https://yandex.ru/dev/direct
+### Таблица: yandex_direct_views
 
-[^2]: https://yandex.ru/dev/direct/doc/ru/concepts/overview
+| Поле | Тип данных | Описание | Особенности |
+| :-- | :-- | :-- | :-- |
+| id | BIGINT UNSIGNED AUTO_INCREMENT | Первичный ключ | PRIMARY KEY |
+| yandexUUID | VARCHAR(64) | UUID в системе Яндекса | NOT NULL |
+| pid | VARCHAR(64) | Внутренний идентификатор пользователя | NOT NULL |
+| ad_id | VARCHAR(32) | Идентификатор объявления в Директе |  |
+| campaign_id | VARCHAR(32) | Идентификатор кампании в Директе |  |
+| keyword | VARCHAR(255) | Ключевая фраза показа |  |
+| device_type | VARCHAR(32) | Тип устройства (desktop/mobile/tablet) |  |
+| source | VARCHAR(64) | Источник перехода (utm_source) |  |
+| source_type | VARCHAR(32) | Тип источника/канала |  |
+| region_name | VARCHAR(128) | Название региона показа |  |
+| yclid | VARCHAR(64) | Идентификатор клика Яндекса |  |
+| utm_source | VARCHAR(64) | Obязательный параметр, обычно 'yandex' | |
+| utm_medium | VARCHAR(32) | Обязательный (cpc/search/display) | |
+| utm_campaign | VARCHAR(128) | Обязательный (название/id кампании) | |
+| utm_content | VARCHAR(255) | Доп. информация (опционально) |  |
+| utm_term | VARCHAR(255) | Ключевое слово (опционально) |  |
+| created_at | DATETIME | Дата и время создания записи | NOT NULL, DEFAULT CURRENT_TIMESTAMP |
+| updated_at | DATETIME | Дата и время обновления записи | NOT NULL, ON UPDATE CURRENT_TIMESTAMP |
 
-[^3]: https://yandex.com/dev/direct
-
-[^4]: https://yagla.ru/blog/kontekstnaya-reklama/api-yandeksdirekt/
-
-[^5]: https://yandex.cloud/ru/docs/api-design-guide/concepts/endpoints
-
-[^6]: https://yandex.cloud/ru/docs/search-api/concepts/post-request
-
-[^7]: https://tichiy.ru/wiki/rabota-s-yandeks-direct-api/
-
-[^8]: https://qna.habr.com/q/79622
-
-[^9]: https://www.youtube.com/watch?v=ZuGLwm9l0zo
-
-[^10]: https://github.com/ArtemBuskunov/API_YD
 
